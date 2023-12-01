@@ -9,3 +9,9 @@ export interface CreateFoodInputs{
     readyTime: number;
     price: number;
 }
+
+export interface UpdateFood{
+    foodid: string;
+    hapus: string,
+    myimages:string,
+}

@@ -1,8 +1,9 @@
 import { Request, Response, NextFunction, request } from "express";
-import { EditVendorInputs, VendorLoginInput, VendorPayLoad, EditVendorService, CreateFoodInputs } from "../dto";
+import { EditVendorInputs, VendorLoginInput, VendorPayLoad, EditVendorService, CreateFoodInputs, UpdateFood } from "../dto";
 import { GenerateSign } from "../utility";
 import { FindVendor } from './AdminController';
 import { Food, Vendor, VendorDoc } from "../models";
+import multer from "multer";
 
 export const VendorLogin =async (req:Request, res:Response, next:NextFunction) => {
     const { email, password } = <VendorLoginInput> req.body;
@@ -155,3 +156,21 @@ export const GetFood = async (req: Request, res: Response) => {
         return res.json({ "message": "Vendor not found" });
     }
 }
+
+export const UpdateFoodImages = async (req: Request, res: Response, next: NextFunction) => {
+    const user = req.user;
+
+    if (user){
+    const {foodid,hapus,myimages}=<UpdateFood>req.body
+        if (hapus==='true'){
+            const food= await Food.updateOne({_id:foodid},{ $unset:{images:1}})
+            return res.json(food)
+        } else {
+            const files = req.files as [Express.Multer.File];
+            const images = files.map((file: Express.Multer.File) => file.filename);
+            const food= await Food.updateOne({_id:foodid}, {$push: {images}})
+        }
+    } else {
+        return res.json({ message: "Vendor not found"})
+    }
+};

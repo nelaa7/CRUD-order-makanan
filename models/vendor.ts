@@ -49,6 +49,7 @@ const VendorSchema = new Schema({
     timestamps: true //setiap kali generate auto menabahkan createAt & updateAt
 });
 
+
 //kalo model fokus satu tabel kalo update dkk
 //vendor ini sebuah model dengan struktur vendordoc menggunakan skema vendor skema nama collectionnya vendor
 const Vendor = mongoose.model<VendorDoc>('vendor', VendorSchema);

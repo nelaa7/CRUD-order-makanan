@@ -1,5 +1,6 @@
 import express, { Request, Response, NextFunction } from "express";
-import { GetVendorProfile, VendorLogin, UpdateVendorProfile, UpdateVendorService, AddFood } from "../controllers";
+import { GetVendorProfile, VendorLogin, UpdateVendorProfile, 
+        UpdateVendorService, AddFood, GetFood, UpdateFoodImages } from "../controllers";
 import { authenticate } from "../middleware";
 import multer from 'multer';
 import Randomstring from "randomstring";
@@ -29,6 +30,8 @@ export {router as VendorRoute};
 
 router.use(authenticate);
 router.get('/profile', authenticate, GetVendorProfile);
+router.get('/food', authenticate, GetFood);
 router.patch('/profile',authenticate, UpdateVendorProfile);
 router.patch('/service', authenticate, UpdateVendorService);
 router.post('/food',gambar, AddFood);
+router.post('/update-food-images', gambar, UpdateFoodImages)

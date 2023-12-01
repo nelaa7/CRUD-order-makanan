@@ -1,5 +1,5 @@
 import express from 'express';
-import { AdminRoute, VendorRoute} from './routes';
+import { AdminRoute, VendorRoute, ShoppingRoute} from './routes';
 
 import bodyParser from 'body-parser';
 import mongoose from 'mongoose';
@@ -25,3 +25,7 @@ mongoose.connect(MONGO_URI).then(result => {
 app.listen(8000, () => {
     console.log('aplikasi aktif pada port 8000');
 })
+
+app.use('./admin', AdminRoute);
+app.use('./vendor', VendorRoute);
+app.use(ShoppingRoute);
