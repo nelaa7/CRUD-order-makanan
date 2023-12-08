@@ -1,10 +1,11 @@
 import express from 'express';
-import { AdminRoute, VendorRoute, ShoppingRoute} from './routes';
+import { AdminRoute, VendorRoute, ShoppingRoute, CustomerRoutes} from './routes';
 
 import bodyParser from 'body-parser';
 import mongoose from 'mongoose';
 import { MONGO_URI } from './config';
 import path from 'path';
+import { Customer } from './models';
 
 const app = express();
 
@@ -16,6 +17,7 @@ app.use('/images', express.static(path.join(__dirname, 'images')));
 //untuk membedakan user
 app.use('/admin', AdminRoute);
 app.use('/vendor', VendorRoute);
+app.use('/customer', CustomerRoutes);
 
 mongoose.connect(MONGO_URI).then(result => {
     console.log('DB terkoneksi');
