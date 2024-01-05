@@ -20,7 +20,7 @@ export const GenerateSign = (payload: AuthPayload) => {
     return jwt.sign(payload, APP_SECRET, {expiresIn: '1d'});
 }
 
-export const ValidateSign = async (req: Request) => {
+export const ValidateSign = async (req: Request, res: Response, next:NextFunction) => {
     // aslinya re.get cuman error jadinya ganti req.header
     const sign = req.get('Authorization');
 

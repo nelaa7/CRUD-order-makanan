@@ -10,13 +10,17 @@ declare global {
     }
 }
 
-export const authenticate = async (req: Request, res: Response, next: NextFunction) => {
-    const validate = await ValidateSign(req);
+export const Authenticate = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const isValid = await ValidateSign(req, res, next);
 
-    if(validate){
-        next();
-    }
-    else{
-        return res.json({"messsage" : "Not authoreized"})
+        if (isValid) {
+            next();
+        } else {
+            return res.status(401).json({ message: 'Not authorized' });
+        }
+    } catch (error) {
+        console.error('Authentication error:', error);
+        return res.status(500).json({ message: 'Internal Server Error' });
     }
 }

@@ -1,7 +1,7 @@
 import express, { Request, Response, NextFunction } from "express";
 import { GetVendorProfile, VendorLogin, UpdateVendorProfile, 
         UpdateVendorService, AddFood, GetFood, UpdateFoodImages } from "../controllers";
-import { authenticate } from "../middleware";
+import { Authenticate } from "../middleware";
 import multer from 'multer';
 import Randomstring from "randomstring";
 
@@ -28,10 +28,10 @@ router.get('/', (req: Request, res: Response, next: NextFunction) => {
 
 export {router as VendorRoute};
 
-router.use(authenticate);
-router.get('/profile', authenticate, GetVendorProfile);
-router.get('/food', authenticate, GetFood);
-router.patch('/profile',authenticate, UpdateVendorProfile);
-router.patch('/service', authenticate, UpdateVendorService);
+router.use(Authenticate);
+router.get('/profile', Authenticate, GetVendorProfile);
+router.get('/food', Authenticate, GetFood);
+router.patch('/profile',Authenticate, UpdateVendorProfile);
+router.patch('/service', Authenticate, UpdateVendorService);
 router.post('/food',gambar, AddFood);
 router.post('/update-food-images', gambar, UpdateFoodImages)

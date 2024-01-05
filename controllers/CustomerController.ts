@@ -6,82 +6,68 @@ import { GenerateSalt, GeneratePassword, GenerateOTP, onRequestOTP, GenerateSign
 import { Customer, CustomerDoc } from "../models";
 
 export const CustomerSignUp = async (req: Request, res: Response, next: NextFunction) => {
-    const customerInput = plainToClass(CreateCustomerInput, req.body);
-    const inputError = await validate(customerInput, {validationError: {target:true}});
+    try {
 
-    if(inputError.length > 0){
-        return res.status(400).json(inputError);
-    }
+        const Customerinput = plainToClass(CreateCustomerInput, req.body)
+        const inputError = await validate(Customerinput, { validationError: { target: true } })
+        if (inputError.length > 0) return res.status(400).json(inputError);
 
-    const {email, phone, password} = customerInput;
-    const salt = await GenerateSalt();
-    const userPassword = await GeneratePassword(password, salt);
-
-    const custExist = await FindCust("", email);
-
-    if(custExist){
-        return res.json({ message: "Email Sudah Terdaftar!" });
-    }else{
-        const {otp, expiry} = GenerateOTP();
-    
-        console.log(otp);
-    
-        const result = await Customer.create({
-            email: email,
-            password: userPassword,
-            salt: salt,
-            firstName: '',
-            lastName: '',
-            address: '',
-            phone: phone,
-            verified: false,
-            otp: otp,
-            otp_expiry: expiry,
-            lat: 0,
-            lng: 0,
-        });
-    
-        if(result){
-            await onRequestOTP(otp, phone);
-    
-            const result_pros: CustomerDoc = result as CustomerDoc;
-    
+        const { email, phone, password } = Customerinput
+        const salt = await GenerateSalt()
+        const userPassword = await GeneratePassword(password, salt)
+        const { otp, expiry } = GenerateOTP()
+        await onRequestOTP(otp,phone);
+        const result = await Customer.create(
+            {
+                email, password: userPassword,
+                salt, phone, verified: false,
+                otp, otp_expiry: expiry, lat: 0, lng: 0
+            })
+        if (result) {
+            // await onRequestOtp(otp, phone);
+            const result_pros: CustomerDoc = result as CustomerDoc
             const signature = GenerateSign({
+                
                 _id: result_pros._id,
                 email: result_pros.email,
                 verified: result_pros.verified
-            });
-    
-            return res.status(201).json({signature: signature, verified:result_pros.verified,email:result_pros.email})
-            
-        }else{
-            return res.status(400).json({message: 'Sign Up Gagal'});
+            })
+            return res.status(201).json({ signature, verified: result_pros.verified, email: result_pros.email })
+        } else {
+            return res.status(400).json({ message: "sign up gagal" })
+        }
+    } catch (e) {
+        if ((e as any).code === 11000) {
+            return res.json({ "message": "Customer Exist" })
+        }
+        else if (typeof e === "string") {
+            return res.json(e.toUpperCase())
+        } else if (e instanceof Error) {
+            return res.json(e.message)
         }
     }
 }
-
 export const VerifOTP = async (req: Request, res: Response, next: NextFunction) => {
-    console.log(req.body);
-    const { otp } = req.body;
-    const customer = req.user;
+    try {
+        const { otp } = req.body;
+        const customer = req.user;
 
-    if(customer){
-        const data = await Customer.findById(customer._id);
-        if(data){
-            if(data.otp === otp && data.otp_expiry >= new Date()){
+        if (customer) {
+            const data = await Customer.findById(customer._id);
+
+            if (data && parseInt(data.otp) === parseInt(otp) && new Date(data.otp_expiry) >= new Date()) {
                 data.verified = true;
-                const updateData = await data.save();
-                const signature = GenerateSign({
-                    _id: updateData._id,
-                    email: updateData.email,
-                    verified: updateData.verified
-                });
-
-                return res.status(201).json({signature: signature, verified: updateData.verified, email: updateData.email});
+                const { _id, email, verified } = await data.save();
+                const signature = GenerateSign({ _id, email, verified });
+                return res.status(201).json({ signature, verified, email });
             }
         }
+
+        return res.status(400).json({ "message": "Verifikasi otp gagal" });
+    } catch (error) {
+        console.error("Error in VerifOTP:", error);
+        return res.status(500).json({ message: 'Internal Server Error' });
     }
-    return res.status(400).json({message:'Verifikasi OTP gagal'});
 }
 
 export const FindCust = async(id : string | undefined, email?: string) =>{

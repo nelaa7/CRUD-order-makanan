@@ -10,11 +10,12 @@ export const GenerateOTP = () => {
 export const onRequestOTP = async (otp: number, toPhoneNumber: string) => {
     const accountSid = 'ACaff1720d69e33d51c7853c2a5b4ac581';
     const authToken = 'bc383f30eaf7859dc24542f047bf2716';
-    const client = require('twilio')(accountSid,authToken);
+    const client = require('twilio')(accountSid, authToken);
 
     const data = {
         body: 'OTP anda'+otp,
-        from: '+6285731589648'
+        from: '+12165038292',
+        to : toPhoneNumber
     };
     console.log(data);
 
