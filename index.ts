@@ -30,4 +30,4 @@ app.listen(8000, () => {
 
 app.use('./admin', AdminRoute);
 app.use('./vendor', VendorRoute);
-app.use(ShoppingRoute);
+app.use('./shopping', ShoppingRoute);

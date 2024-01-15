@@ -21,6 +21,6 @@ export const Authenticate = async (req: Request, res: Response, next: NextFuncti
         }
     } catch (error) {
         console.error('Authentication error:', error);
-        return res.status(500).json({ message: 'Internal Server Error' });
+        return res.status(500).json({ message: 'token salah' });
     }
 }

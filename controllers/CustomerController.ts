@@ -4,6 +4,8 @@ import { plainToClass } from "class-transformer";
 import { validate } from "class-validator";
 import { GenerateSalt, GeneratePassword, GenerateOTP, onRequestOTP, GenerateSign,ValidatePassword } from "../utility";
 import { Customer, CustomerDoc } from "../models";
+import { Message } from "twilio/lib/twiml/MessagingResponse";
+import { verify } from "jsonwebtoken";
 
 export const CustomerSignUp = async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -79,30 +81,43 @@ export const FindCust = async(id : string | undefined, email?: string) =>{
     }
 } 
 
-export const LoginCustomer = async (req: Request, res:Response, next:NextFunction) =>{
-    const { email, password } = <LoginCustomerInput>req.body;
+export const LoginCustomer = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const { email, password } = <LoginCustomerInput>req.body;
 
-    const custExist = await FindCust("", email);
+        const custExist = await FindCust("", email);
 
-    if (custExist && !Array.isArray(custExist)) {
-        const isPasswordTrue = await ValidatePassword(
-          password,
-          custExist.password,
-          custExist.salt
-        );
-        if (isPasswordTrue) {
-          const { _id, email, verified } = custExist;
-          const payload: CustomerPayload = { _id, email, verified };
-          const jwt = GenerateSign(payload);
-        //   return res.json(GenerateSign(payload));
-            const responseObj = {
-                signature : jwt,
-                email: payload.email,
-                verified: payload.verified,
-                message: 'Login successful'
-            };
-            return res.json(responseObj);
+        if (custExist && !Array.isArray(custExist)) {
+            const isPasswordTrue = await ValidatePassword(
+                password,
+                custExist.password,
+                custExist.salt
+            );
+
+            if (isPasswordTrue) {
+                const { _id, email, verified } = custExist;
+
+                if (verified) {
+                    const payload: CustomerPayload = { _id, email, verified };
+                    const jwt = GenerateSign(payload);
+
+                    const responseObj = {
+                        signature: jwt,
+                        email: payload.email,
+                        verified: payload.verified,
+                        message: 'Login successful'
+                    };
+
+                    return res.json(responseObj);
+                } else {
+                    return res.status(403).json({ message: "User not verified. Please verify your account." });
+                }
+            }
         }
+
+        return res.status(401).json({ message: "Authentication failed" });
+    } catch (error) {
+        console.error("Error during authentication:", error);
+        return res.status(500).json({ message: "Internal Server Error" });
     }
-    return res.json({ message: "login gagal" });
 }
